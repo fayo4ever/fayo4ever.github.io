@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GSN Quick Lookup | Baltimore Ravens</title>
+<style>
+  :root {
+    --purple: #24135F;
+    --gold: #9A7611;
+    --gold-light: #C9A227;
+    --bg: #F7F6FC;
+    --white: #FFFFFF;
+    --border: #DDD8F0;
+    --text: #1A1A2E;
+    --muted: #777;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: var(--purple);
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .header-left h1 { color: var(--white); font-size: 1.25rem; font-weight: 700; }
+  .header-left p  { color: var(--gold-light); font-size: 0.75rem; margin-top: 2px; }
+  .nav-link {
+    color: var(--gold-light);
+    font-size: 0.8rem;
+    text-decoration: none;
+    border: 1px solid var(--gold);
+    padding: 6px 14px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+  .nav-link:hover { background: var(--gold); color: var(--white); }
+
+  /* ── SEARCH ── */
+  .search-section {
+    background: var(--white);
+    border-bottom: 2px solid var(--border);
+    padding: 28px 24px 20px;
+  }
+  .search-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .search-wrap {
+    display: flex;
+    gap: 10px;
+    max-width: 600px;
+  }
+  #searchInput {
+    flex: 1;
+    font-size: 1.3rem;
+    padding: 12px 18px;
+    border: 2.5px solid var(--purple);
+    border-radius: 10px;
+    outline: none;
+    color: var(--text);
+    background: var(--white);
+  }
+  #searchInput:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(154,118,17,0.15); }
+  #clearBtn {
+    padding: 12px 18px;
+    background: var(--border);
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    cursor: pointer;
+    color: var(--muted);
+  }
+  #clearBtn:hover { background: #c9c4e0; }
+
+  /* ── ARTIST LIST (empty state) ── */
+  .artist-list {
+    padding: 20px 24px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    max-width: 900px;
+  }
+  .artist-chip {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    color: var(--purple);
+    transition: all 0.15s;
+  }
+  .artist-chip:hover { background: var(--purple); color: var(--white); border-color: var(--purple); }
+  .artist-chip.mt-bank { border-color: var(--gold); background: #FFF9EC; }
+  .artist-chip.mt-bank:hover { background: var(--gold); color: var(--white); }
+
+  /* ── RESULTS AREA ── */
+  #results { padding: 24px; }
+
+  .artist-title {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--purple);
+    margin-bottom: 4px;
+  }
+  .artist-subtitle {
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin-bottom: 20px;
+  }
+  .mt-badge {
+    display: inline-block;
+    background: var(--gold);
+    color: var(--white);
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 12px;
+    margin-left: 10px;
+    vertical-align: middle;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* ── KPI GRID ── */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  .kpi-card {
+    background: var(--white);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+  }
+  .kpi-card.highlight {
+    background: var(--purple);
+    border-color: var(--purple);
+  }
+  .kpi-label {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+  .kpi-card.highlight .kpi-label { color: var(--gold-light); }
+  .kpi-value {
+    font-size: 1.65rem;
+    font-weight: 800;
+    color: var(--purple);
+    line-height: 1.1;
+  }
+  .kpi-card.highlight .kpi-value { color: var(--white); font-size: 1.9rem; }
+  .kpi-sub {
+    font-size: 0.75rem;
+    color: var(--gold);
+    margin-top: 4px;
+    font-weight: 600;
+  }
+  .kpi-card.highlight .kpi-sub { color: rgba(255,255,255,0.65); }
+
+  /* Revenue calc note */
+  .calc-note {
+    background: #FFF9EC;
+    border: 1px solid var(--gold);
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 0.78rem;
+    color: #5A3E00;
+    margin-bottom: 20px;
+  }
+
+  /* ── SHOW TABLE ── */
+  .table-section { margin-top: 8px; }
+  .table-title {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin-bottom: 10px;
+    font-weight: 700;
+  }
+  .show-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+    background: var(--white);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(36,19,95,0.08);
+  }
+  .show-table th {
+    background: var(--purple);
+    color: var(--white);
+    padding: 10px 14px;
+    text-align: left;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+  }
+  .show-table td {
+    padding: 9px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+  }
+  .show-table tr:last-child td { border-bottom: none; }
+  .show-table tr:nth-child(even) td { background: var(--bg); }
+  .final-tag {
+    display: inline-block;
+    background: #E8F5E9;
+    color: #2E7D32;
+    border-radius: 10px;
+    padding: 2px 8px;
+    font-size: 0.7rem;
+    font-weight: 700;
+  }
+  .pending-tag {
+    display: inline-block;
+    background: #FFF8E1;
+    color: #F57F17;
+    border-radius: 10px;
+    padding: 2px 8px;
+    font-size: 0.7rem;
+    font-weight: 700;
+  }
+
+  /* ── PDF BUTTON ── */
+  .pdf-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: var(--purple);
+    color: var(--white);
+    border: none;
+    border-radius: 8px;
+    padding: 10px 22px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 20px;
+    text-decoration: none;
+  }
+  .pdf-btn:hover { background: var(--gold); }
+
+  /* ── NO RESULT ── */
+  .no-result {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+  }
+  .no-result .emoji { font-size: 3rem; margin-bottom: 12px; }
+  .no-result h3 { color: var(--purple); margin-bottom: 6px; }
+
+  /* ── PRINT ── */
+  @media print {
+    .header .nav-link, .pdf-btn, #clearBtn, .search-section { display: none !important; }
+    body { background: white; }
+    .kpi-card { border: 1px solid #ccc !important; }
+  }
+  @media (max-width: 600px) {
+    /* Layout */
+    #results { padding: 14px; }
+    .search-section { padding: 16px; }
+    .artist-list { padding: 12px 14px; gap: 8px; }
+
+    /* Larger tap targets on artist chips */
+    .artist-chip {
+      padding: 10px 16px;
+      font-size: 0.9rem;
+      min-height: 42px;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    /* KPI: 2-column */
+    .kpi-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .kpi-card { padding: 12px 14px; }
+    .kpi-value { font-size: 1.3rem; }
+    .kpi-card.highlight .kpi-value { font-size: 1.55rem; }
+    .kpi-label { font-size: 0.65rem; }
+
+    /* Show table: horizontal scroll */
+    .table-section { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .show-table { min-width: 560px; }
+
+    /* Artist title */
+    .artist-title { font-size: 1.3rem; }
+
+    /* Header */
+    .header { padding: 10px 14px; }
+    .header-left h1 { font-size: 1.1rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <h1>🏟️ GSN Quick Lookup</h1>
+    <p>Baltimore Ravens · 3PE · Gridiron Stadium Network 2026</p>
+  </div>
+  <a href="gsn_executive.html" class="nav-link">📊 Executive Dashboard →</a>
+</div>
+
+<div class="search-section">
+  <div class="search-label">Search any artist or event</div>
+  <div class="search-wrap">
+    <input type="text" id="searchInput" placeholder="e.g. Usher, Morgan Wallen, BTS..." autocomplete="off" autocorrect="off" spellcheck="false">
+    <button id="clearBtn" onclick="clearSearch()">✕</button>
+  </div>
+</div>
+
+<div id="artistList" class="artist-list"></div>
+<div id="results"></div>
+
+<script>
+const GSN_DATA = [{"artist":"USHER/CHRIS BROWN","shows":[{"city":"Denver, CO","date":"6/26/26","tickets":50276,"gross":7308056.5,"atp":145.36,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":true,"status":"7/6 - FINAL","ravens_rev":584644.52},{"city":"Detroit, MI","date":"7/2/26","tickets":38804,"gross":6289848.5,"atp":162.09,"day1_tickets":31948,"day1_gross":5260580.5,"presale_tickets":29628,"presale_gross":4882564.0,"is_final":true,"status":"7/6 - FINAL","ravens_rev":503187.88},{"city":"Detroit, MI","date":"7/3/26","tickets":41456,"gross":7052835.0,"atp":170.13,"day1_tickets":35931,"day1_gross":6238258.0,"presale_tickets":33905,"presale_gross":5878795.0,"is_final":true,"status":"7/6 - FINAL","ravens_rev":564226.8},{"city":"Detroit, MI","date":"7/5/26","tickets":42743,"gross":6209976.0,"atp":145.29,"day1_tickets":22393,"day1_gross":3486749.0,"presale_tickets":19345,"presale_gross":2993007.0,"is_final":true,"status":"7/6 - FINAL","ravens_rev":496798.08},{"city":"Ladover, MD","date":"7/10/26","tickets":34158,"gross":7466877.5,"atp":218.6,"day1_tickets":29240,"day1_gross":6569333.0,"presale_tickets":27470,"presale_gross":6242948.0,"is_final":true,"status":"FINAL","ravens_rev":597350.2},{"city":"Ladover, MD","date":"7/11/26","tickets":36795,"gross":8802705.5,"atp":239.24,"day1_tickets":31654,"day1_gross":8065291.0,"presale_tickets":30085,"presale_gross":7802422.5,"is_final":true,"status":"FINAL","ravens_rev":704216.44},{"city":"Ladover, MD","date":"7/13/26","tickets":37651,"gross":6603545.0,"atp":175.39,"day1_tickets":21174,"day1_gross":4193608.5,"presale_tickets":18483,"presale_gross":3653298.0,"is_final":true,"status":"FINAL","ravens_rev":528283.6},{"city":"Charlotte, NC","date":"7/17/26","tickets":50039,"gross":9185957.12,"atp":183.58,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":true,"status":"FINAL","ravens_rev":734876.57},{"city":"Charlotte, NC","date":"7/18/26","tickets":52292,"gross":9089208.4,"atp":173.82,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":true,"status":"FINAL","ravens_rev":727136.67},{"city":"Nashville, TN","date":"7/25/26","tickets":52583,"gross":9820885.0,"atp":186.77,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":true,"status":"FINAL","ravens_rev":785670.8},{"city":"Santa Clara, CA","date":"8/28/26","tickets":35623,"gross":6795680.0,"atp":190.77,"day1_tickets":35551,"day1_gross":6741501.0,"presale_tickets":34070,"presale_gross":6483965.0,"is_final":false,"status":"2026-05-13 00:00:00","ravens_rev":543654.4},{"city":"Santa Clara, CA","date":"8/29/26","tickets":33938,"gross":6658047.5,"atp":196.18,"day1_tickets":33242,"day1_gross":6469059.0,"presale_tickets":31470,"presale_gross":6104665.0,"is_final":false,"status":"2026-05-13 00:00:00","ravens_rev":532643.8},{"city":"Santa Clara, CA","date":"9/1/26","tickets":14266,"gross":2238633.5,"atp":156.92,"day1_tickets":12595,"day1_gross":1916482.5,"presale_tickets":11170,"presale_gross":1676985.0,"is_final":false,"status":"2026-05-13 00:00:00","ravens_rev":179090.68},{"city":"Los Angeles, CA","date":"9/25/26","tickets":38957,"gross":7652974.5,"atp":196.45,"day1_tickets":36981,"day1_gross":7341641.5,"presale_tickets":34551,"presale_gross":6880686.5,"is_final":false,"status":"2026-08-13 00:00:00","ravens_rev":612237.96},{"city":"Los Angeles, CA","date":"9/26/26","tickets":39420,"gross":7779599.0,"atp":197.35,"day1_tickets":37948,"day1_gross":7523952.0,"presale_tickets":35425,"presale_gross":7076537.5,"is_final":false,"status":"2026-08-13 00:00:00","ravens_rev":622367.92},{"city":"Los Angeles, CA","date":"11/15/26","tickets":33042,"gross":6825043.0,"atp":206.56,"day1_tickets":29956,"day1_gross":6269614.0,"presale_tickets":27277,"presale_gross":5716995.5,"is_final":false,"status":"2026-08-13 00:00:00","ravens_rev":546003.44},{"city":"Atlanta, GA","date":"11/7/26","tickets":45229,"gross":9429643.0,"atp":208.49,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":false,"status":"2026-08-10 00:00:00","ravens_rev":754371.44},{"city":"Atlanta, GA","date":"11/8/26","tickets":42529,"gross":8909158.0,"atp":209.48,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":false,"status":"2026-08-10 00:00:00","ravens_rev":712732.64},{"city":"Atlanta, GA","date":"11/10/26","tickets":38104,"gross":7905688.5,"atp":207.48,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":false,"status":"2026-08-10 00:00:00","ravens_rev":632455.08},{"city":"Atlanta, GA","date":"11/11/26","tickets":37747,"gross":7844376.0,"atp":207.81,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":false,"status":"2026-08-10 00:00:00","ravens_rev":627550.08},{"city":"Tampa, FL","date":"12/11/26","tickets":43776,"gross":7663356.0,"atp":175.06,"day1_tickets":null,"day1_gross":null,"presale_tickets":40375,"presale_gross":7074467.0,"is_final":false,"status":"2026-08-11 00:00:00","ravens_rev":613068.48},{"city":"Tampa, FL","date":"12/12/26","tickets":43323,"gross":7502215.0,"atp":173.17,"day1_tickets":null,"day1_gross":null,"presale_tickets":33451,"presale_gross":5834056.0,"is_final":false,"status":"2026-08-11 00:00:00","ravens_rev":600177.2}],"total_nights":22,"total_tickets":882751,"total_gross":165034308.52,"avg_gross":7501559.48,"avg_tickets":40125.0,"atp":186.95,"total_day1_tickets":358613,"total_day1_gross":70076070.0,"total_presale_tickets":406705,"total_presale_gross":78301392.0,"ravens_revenue":13202744.68,"completed_nights":10},{"artist":"BRUNO MARS","shows":[{"city":"Charlotte, NC","date":"4/29/26","tickets":58018,"gross":9629949.85,"atp":165.98,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":true,"status":"6/10/26 - FINAL","ravens_rev":770395.99},{"city":"Landover, MD","date":"5/2/26","tickets":43369,"gross":8801361.5,"atp":202.94,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":true,"status":"5/12/26 - FINAL","ravens_rev":704108.92},{"city":"Landover, MD","date":"5/3/26","tickets":43093,"gross":6883515.5,"atp":159.74,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":true,"status":"5/12/26 - FINAL","ravens_rev":550681.24},{"city":"Nashville, TN","date":"5/6/26","tickets":51507,"gross":9231150.5,"atp":179.22,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":true,"status":"FINAL","ravens_rev":738492.04},{"city":"Detroit, MI","date":"5/9/26","tickets":48134,"gross":8002879.0,"atp":166.26,"day1_tickets":40030,"day1_gross":6248075.0,"presale_tickets":35829,"presale_gross":5529291.0,"is_final":true,"status":"5/11/26 - FINAL","ravens_rev":640230.32},{"city":"Detroit, MI","date":"5/10/26","tickets":46829,"gross":7255111.5,"atp":154.93,"day1_tickets":35798,"day1_gross":5024643.0,"presale_tickets":27836,"presale_gross":null,"is_final":true,"status":"5/11/26 - FINAL","ravens_rev":580408.92},{"city":"Pittsburgh, PA","date":"8/29/26","tickets":56219,"gross":8428135.0,"atp":149.92,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":false,"status":"2026-08-05 00:00:00","ravens_rev":674250.8},{"city":"Tampa, FL","date":"9/12/26","tickets":52590,"gross":8955900.0,"atp":170.3,"day1_tickets":47607,"day1_gross":8160964.0,"presale_tickets":41834,"presale_gross":7089338.0,"is_final":false,"status":"2026-08-11 00:00:00","ravens_rev":716472.0},{"city":"Tampa, FL","date":"9/13/26","tickets":52349,"gross":8820018.0,"atp":168.48,"day1_tickets":42350,"day1_gross":6454940.0,"presale_tickets":32813,"presale_gross":4563766.0,"is_final":false,"status":"2026-08-11 00:00:00","ravens_rev":705601.44},{"city":"Los Angeles, CA","date":"9/30/26","tickets":45511,"gross":7731301.5,"atp":169.88,"day1_tickets":40764,"day1_gross":6496476.0,"presale_tickets":34683,"presale_gross":5335064.5,"is_final":false,"status":"2026-08-13 00:00:00","ravens_rev":618504.12},{"city":"Los Angeles, CA","date":"10/2/26","tickets":45741,"gross":7951531.5,"atp":173.84,"day1_tickets":45155,"day1_gross":7813822.5,"presale_tickets":38230,"presale_gross":6741285.0,"is_final":false,"status":"2026-08-13 00:00:00","ravens_rev":636122.52},{"city":"Los Angeles, CA","date":"10/3/26","tickets":45814,"gross":7971216.0,"atp":173.99,"day1_tickets":45119,"day1_gross":7818188.5,"presale_tickets":38206,"presale_gross":6748569.0,"is_final":false,"status":"2026-08-13 00:00:00","ravens_rev":637697.28},{"city":"Los Angeles, CA","date":"10/6/26","tickets":45538,"gross":7959802.0,"atp":174.79,"day1_tickets":45027,"day1_gross":7841240.5,"presale_tickets":32587,"presale_gross":5825670.5,"is_final":false,"status":"2026-08-13 00:00:00","ravens_rev":636784.16},{"city":"Los Angeles, CA","date":"10/7/26","tickets":45562,"gross":7769948.0,"atp":170.54,"day1_tickets":44580,"day1_gross":7507080.0,"presale_tickets":null,"presale_gross":null,"is_final":false,"status":"2026-08-13 00:00:00","ravens_rev":621595.84},{"city":"Santa Clara, CA","date":"10/10/26","tickets":46561,"gross":10590884.5,"atp":227.46,"day1_tickets":46130,"day1_gross":10536116.5,"presale_tickets":43991,"presale_gross":10179085.0,"is_final":false,"status":"2026-05-13 00:00:00","ravens_rev":847270.76},{"city":"Santa Clara, CA","date":"10/11/26","tickets":46268,"gross":10615169.0,"atp":229.43,"day1_tickets":46084,"day1_gross":10566533.5,"presale_tickets":43823,"presale_gross":10096158.0,"is_final":false,"status":"2026-05-13 00:00:00","ravens_rev":849213.52}],"total_nights":16,"total_tickets":773103,"total_gross":136597873.35,"avg_gross":8537367.08,"avg_tickets":48319.0,"atp":176.69,"total_day1_tickets":478644,"total_day1_gross":84468079.5,"total_presale_tickets":369832,"total_presale_gross":62108227.0,"ravens_revenue":10927829.87,"completed_nights":6},{"artist":"BTS WORLD TOUR","shows":[{"city":"Tampa, FL","date":"4/25/26","tickets":65402,"gross":13210055.8,"atp":201.98,"day1_tickets":59338,"day1_gross":10965076.0,"presale_tickets":55606,"presale_gross":10398602.0,"is_final":true,"status":"4/25/26 - FINAL","ravens_rev":1056804.46},{"city":"Tampa, FL","date":"4/26/26","tickets":64470,"gross":13135549.7,"atp":203.75,"day1_tickets":59680,"day1_gross":11034920.0,"presale_tickets":55993,"presale_gross":10494046.0,"is_final":true,"status":"4/26/26 - FINAL","ravens_rev":1050843.98},{"city":"Tampa, FL","date":"4/28/26","tickets":64980,"gross":13141232.15,"atp":202.24,"day1_tickets":59663,"day1_gross":11029946.0,"presale_tickets":39940,"presale_gross":8486530.0,"is_final":true,"status":"4/28/26 - FINAL","ravens_rev":1051298.57},{"city":"Baltimore, MD","date":"8/10/26","tickets":63879,"gross":13445400.0,"atp":210.48,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":false,"status":"2026-06-08 00:00:00","ravens_rev":1075632.0},{"city":"Baltimore, MD","date":"8/11/26","tickets":64024,"gross":13391000.0,"atp":209.16,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":false,"status":"2026-06-08 00:00:00","ravens_rev":1071280.0},{"city":"Los Angeles, CA","date":"9/1/26","tickets":66617,"gross":12509827.5,"atp":187.79,"day1_tickets":64364,"day1_gross":12044526.0,"presale_tickets":60656,"presale_gross":11471864.0,"is_final":false,"status":"2026-08-13 00:00:00","ravens_rev":1000786.2},{"city":"Los Angeles, CA","date":"9/2/26","tickets":66566,"gross":12498021.0,"atp":187.75,"day1_tickets":64864,"day1_gross":12146816.0,"presale_tickets":61162,"presale_gross":11576383.0,"is_final":false,"status":"2026-08-13 00:00:00","ravens_rev":999841.68},{"city":"Los Angeles, CA","date":"9/5/26","tickets":66528,"gross":12499264.0,"atp":187.88,"day1_tickets":64414,"day1_gross":12045781.0,"presale_tickets":60695,"presale_gross":11472582.5,"is_final":false,"status":"2026-08-13 00:00:00","ravens_rev":999941.12},{"city":"Los Angeles, CA","date":"9/6/26","tickets":66507,"gross":12490802.5,"atp":187.81,"day1_tickets":64714,"day1_gross":12113421.0,"presale_tickets":60991,"presale_gross":11540886.5,"is_final":false,"status":"2026-08-13 00:00:00","ravens_rev":999264.2}],"total_nights":9,"total_tickets":588973,"total_gross":116321152.65,"avg_gross":12924572.52,"avg_tickets":65441.0,"atp":197.5,"total_day1_tickets":437037,"total_day1_gross":81380486.0,"total_presale_tickets":395043,"total_presale_gross":75440894.0,"ravens_revenue":9305692.21,"completed_nights":3},{"artist":"MORGAN WALLEN","shows":[{"city":"Denver, CO","date":"5/29/26","tickets":66887,"gross":15618349.75,"atp":233.5,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":true,"status":"6/8/26-FINAL","ravens_rev":1249467.98},{"city":"Denver, CO","date":"5/30/26","tickets":69724,"gross":17542165.0,"atp":251.59,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":true,"status":"6/8/26- FINAL","ravens_rev":1403373.2},{"city":"Pittsburgh, PA","date":"6/5/26","tickets":63909,"gross":12335369.0,"atp":193.01,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":true,"status":"6/8/26- FINAL","ravens_rev":986829.52},{"city":"Baltimore, MD","date":"7/17/26","tickets":49329,"gross":12072900.0,"atp":244.74,"day1_tickets":44025,"day1_gross":9987615.0,"presale_tickets":41596,"presale_gross":9450771.0,"is_final":false,"status":"2026-06-08 00:00:00","ravens_rev":965832.0},{"city":"Baltimore, MD","date":"7/18/26","tickets":53687,"gross":14200000.0,"atp":264.5,"day1_tickets":43186,"day1_gross":10259377.0,"presale_tickets":40647,"presale_gross":9676126.0,"is_final":false,"status":"2026-06-08 00:00:00","ravens_rev":1136000.0},{"city":"Philadelphia, PA","date":"7/31/26","tickets":45573,"gross":11171368.75,"atp":245.13,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":false,"status":"2026-01-13 00:00:00","ravens_rev":893709.5},{"city":"Philadelphia, PA","date":"8/1/26","tickets":49513,"gross":13492050.75,"atp":272.5,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":false,"status":"2026-01-13 00:00:00","ravens_rev":1079364.06}],"total_nights":7,"total_tickets":398622,"total_gross":96432203.25,"avg_gross":13776029.04,"avg_tickets":56946.0,"atp":241.91,"total_day1_tickets":87211,"total_day1_gross":20246992.0,"total_presale_tickets":82243,"total_presale_gross":19126897.0,"ravens_revenue":7714576.26,"completed_nights":3},{"artist":"KAROL G","shows":[{"city":"Landover, MD","date":"8/2/26","tickets":36454,"gross":6390015.5,"atp":175.29,"day1_tickets":29747,"day1_gross":5176480.5,"presale_tickets":27241,"presale_gross":4766103.75,"is_final":true,"status":"FINAL","ravens_rev":511201.24},{"city":"Los Angeles, CA","date":"8/14/26","tickets":43471,"gross":9462268.0,"atp":217.67,"day1_tickets":40137,"day1_gross":8790625.5,"presale_tickets":39009,"presale_gross":8544063.5,"is_final":false,"status":"2023-08-13 00:00:00","ravens_rev":756981.44},{"city":"Los Angeles, CA","date":"8/15/26","tickets":44069,"gross":9611123.0,"atp":218.09,"day1_tickets":40240,"day1_gross":8817760.0,"presale_tickets":39442,"presale_gross":8625563.0,"is_final":false,"status":"2023-08-13 00:00:00","ravens_rev":768889.84},{"city":"Los Angeles, CA","date":"8/16/26","tickets":40778,"gross":8581824.0,"atp":210.45,"day1_tickets":32073,"day1_gross":6545149.5,"presale_tickets":27678,"presale_gross":5584007.0,"is_final":false,"status":"2023-08-13 00:00:00","ravens_rev":686545.92},{"city":"Santa Clara, CA","date":"8/21/26","tickets":38515,"gross":7404473.0,"atp":192.25,"day1_tickets":37645,"day1_gross":7278657.5,"presale_tickets":36126,"presale_gross":7030259.0,"is_final":false,"status":"2026-05-13 00:00:00","ravens_rev":592357.84},{"city":"Santa Clara, CA","date":"8/22/26","tickets":34542,"gross":6075523.5,"atp":175.89,"day1_tickets":29823,"day1_gross":5334334.5,"presale_tickets":26332,"presale_gross":4707878.0,"is_final":false,"status":"2026-05-13 00:00:00","ravens_rev":486041.88},{"city":"Seattle, WA","date":"8/26/26","tickets":33546,"gross":5452809.0,"atp":162.55,"day1_tickets":23048,"day1_gross":3898692.0,"presale_tickets":21239,"presale_gross":3616188.5,"is_final":false,"status":"2026-08-10 00:00:00","ravens_rev":436224.72},{"city":"Atlanta, GA","date":"9/24/26","tickets":33898,"gross":5781026.0,"atp":170.54,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":false,"status":"2026-08-10 00:00:00","ravens_rev":462482.08},{"city":"Tampa, FL","date":"10/9/26","tickets":42957,"gross":6699001.5,"atp":155.95,"day1_tickets":32841,"day1_gross":5296109.5,"presale_tickets":29775,"presale_gross":4840852.5,"is_final":false,"status":"2026-08-11 00:00:00","ravens_rev":535920.12}],"total_nights":9,"total_tickets":348230,"total_gross":65458063.5,"avg_gross":7273118.17,"avg_tickets":38692.0,"atp":187.97,"total_day1_tickets":265554,"total_day1_gross":51137809.0,"total_presale_tickets":246842,"total_presale_gross":47714915.25,"ravens_revenue":5236645.08,"completed_nights":1},{"artist":"ED SHEERAN","shows":[{"city":"Nashville, TN","date":"6/20/26","tickets":28683,"gross":3804320.75,"atp":132.63,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":true,"status":"FINAL","ravens_rev":304345.66},{"city":"Denver, CO","date":"7/4/26","tickets":39078,"gross":4977313.95,"atp":127.37,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":false,"status":"2026-07-06 00:00:00","ravens_rev":398185.12},{"city":"Santa Clara, CA","date":"7/25/26","tickets":42305,"gross":6406068.56,"atp":151.43,"day1_tickets":24393,"day1_gross":4099526.5,"presale_tickets":20844,"presale_gross":3531016.5,"is_final":false,"status":"2026-05-13 00:00:00","ravens_rev":512485.48},{"city":"Seattle, WA","date":"8/1/26","tickets":54194,"gross":6999195.45,"atp":129.15,"day1_tickets":24283,"day1_gross":3697563.5,"presale_tickets":21917,"presale_gross":3349386.5,"is_final":true,"status":"FINAL","ravens_rev":559935.64},{"city":"Los Angeles, CA","date":"8/8/26","tickets":44836,"gross":5398707.5,"atp":120.41,"day1_tickets":20365,"day1_gross":3517067.5,"presale_tickets":17994,"presale_gross":3120643.0,"is_final":true,"status":"FINAL","ravens_rev":431896.6},{"city":"Detroit, MI","date":"8/29/26","tickets":33081,"gross":4686916.0,"atp":141.68,"day1_tickets":20345,"day1_gross":3109758.5,"presale_tickets":17789,"presale_gross":2725164.5,"is_final":false,"status":"2026-08-10 00:00:00","ravens_rev":374953.28},{"city":"Philadelphia, PA","date":"9/19/26","tickets":34128,"gross":5003466.5,"atp":146.61,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":false,"status":"2026-01-13 00:00:00","ravens_rev":400277.32},{"city":"Atlanta, GA","date":"10/3/26","tickets":30463,"gross":4072656.5,"atp":133.69,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":false,"status":"2026-08-10 00:00:00","ravens_rev":325812.52},{"city":"Charlotte,NC","date":"10/17/26","tickets":38663,"gross":5467700.8,"atp":141.42,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":false,"status":"2026-07-30 00:00:00","ravens_rev":437416.06},{"city":"Tampa, FL","date":"11/7/26","tickets":34873,"gross":5129807.63,"atp":147.1,"day1_tickets":20962,"day1_gross":3410123.0,"presale_tickets":16766,"presale_gross":2746185.5,"is_final":false,"status":"2026-08-11 00:00:00","ravens_rev":410384.61}],"total_nights":10,"total_tickets":380304,"total_gross":51946153.64,"avg_gross":5194615.36,"avg_tickets":38030.0,"atp":136.59,"total_day1_tickets":110348,"total_day1_gross":17834039.0,"total_presale_tickets":95310,"total_presale_gross":15472396.0,"ravens_revenue":4155692.29,"completed_nights":3},{"artist":"YE","shows":[{"city":"Los Angeles, CA","date":"4/1/26","tickets":65635,"gross":12288082.5,"atp":187.22,"day1_tickets":45218,"day1_gross":9213267.0,"presale_tickets":34175,"presale_gross":7133252.5,"is_final":true,"status":"5/12 - FINAL","ravens_rev":983046.6},{"city":"Los Angeles, CA","date":"4/3/26","tickets":74006,"gross":16160859.0,"atp":218.37,"day1_tickets":69426,"day1_gross":14616049.0,"presale_tickets":65853,"presale_gross":13874329.5,"is_final":true,"status":"5/12 - FINAL","ravens_rev":1292868.72},{"city":"Tampa, FL","date":"6/26/26","tickets":65465,"gross":13291544.56,"atp":203.03,"day1_tickets":59325,"day1_gross":11071427.5,"presale_tickets":56437,"presale_gross":10297571.5,"is_final":true,"status":"6/26/26 - FINAL","ravens_rev":1063323.56},{"city":"Tampa, FL","date":"6/28/26","tickets":46430,"gross":6235636.19,"atp":134.3,"day1_tickets":12764,"day1_gross":2011368.0,"presale_tickets":9181,"presale_gross":1352019.5,"is_final":true,"status":"6/28/26 - FINAL","ravens_rev":498850.9}],"total_nights":4,"total_tickets":251536,"total_gross":47976122.25,"avg_gross":11994030.56,"avg_tickets":62884.0,"atp":190.73,"total_day1_tickets":186733,"total_day1_gross":36912111.5,"total_presale_tickets":165646,"total_presale_gross":32657173.0,"ravens_revenue":3838089.78,"completed_nights":4},{"artist":"ZACH BRYAN (WITH HEAVEN ON TOUR)","shows":[{"city":"Denver, CO","date":"8/13/26","tickets":54131,"gross":6504355.0,"atp":120.16,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":false,"status":"2026-08-10 00:00:00","ravens_rev":520348.4},{"city":"Denver, CO","date":"8/14/26","tickets":62589,"gross":7183881.0,"atp":114.78,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":false,"status":"2026-08-10 00:00:00","ravens_rev":574710.48},{"city":"Charlotte, NC","date":"4/18/26","tickets":75603,"gross":11690356.25,"atp":154.63,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":true,"status":"6/10/26 - FINAL","ravens_rev":935228.5},{"city":"Cleveland, OH","date":"5/9/26","tickets":51740,"gross":7700000.0,"atp":148.82,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":false,"status":"2026-02-10 00:00:00","ravens_rev":616000.0},{"city":"Tampa, FL","date":"3/14/26","tickets":61385,"gross":9570307.36,"atp":155.91,"day1_tickets":47358,"day1_gross":6895931.5,"presale_tickets":45323,"presale_gross":6566589.0,"is_final":true,"status":"3/14/26 - FINAL","ravens_rev":765624.59}],"total_nights":5,"total_tickets":305448,"total_gross":42648899.61,"avg_gross":8529779.92,"avg_tickets":61090.0,"atp":139.63,"total_day1_tickets":47358,"total_day1_gross":6895931.5,"total_presale_tickets":45323,"total_presale_gross":6566589.0,"ravens_revenue":3411911.97,"completed_nights":2},{"artist":"CHRIS STAPLETON","shows":[{"city":"Nashville, TN","date":"5/23/26","tickets":45255,"gross":6599863.75,"atp":145.84,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":true,"status":"FINAL","ravens_rev":527989.1},{"city":"Tampa, FL","date":"6/13/26","tickets":46995,"gross":6431960.16,"atp":136.86,"day1_tickets":14968,"day1_gross":2445438.0,"presale_tickets":12154,"presale_gross":1984216.5,"is_final":true,"status":"FINAL","ravens_rev":514556.81},{"city":"Charlotte, NC","date":"6/20/26","tickets":45574,"gross":7226367.62,"atp":158.56,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":true,"status":"FINAL","ravens_rev":578109.41},{"city":"Detroit, MI","date":"8/8/26","tickets":37358,"gross":6230505.5,"atp":166.78,"day1_tickets":22519,"day1_gross":3612361.25,"presale_tickets":17417,"presale_gross":2799623.75,"is_final":true,"status":"FINAL","ravens_rev":498440.44},{"city":"Atlanta, GA","date":"8/21/26","tickets":38192,"gross":6317337.25,"atp":165.41,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":false,"status":"None","ravens_rev":505386.98}],"total_nights":5,"total_tickets":213374,"total_gross":32806034.28,"avg_gross":6561206.86,"avg_tickets":42675.0,"atp":153.75,"total_day1_tickets":37487,"total_day1_gross":6057799.25,"total_presale_tickets":29571,"total_presale_gross":4783840.25,"ravens_revenue":2624482.74,"completed_nights":4},{"artist":"AC/DC","shows":[{"city":"Charlotte, NC","date":"7/11/25","tickets":46047,"gross":6960049.21,"atp":151.15,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":true,"status":"FINAL","ravens_rev":556803.94},{"city":"Denver, CO","date":"7/28/25","tickets":48624,"gross":7159299.0,"atp":147.24,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":true,"status":"FINAL","ravens_rev":572743.92},{"city":"Santa Clara, CA","date":"8/5/25","tickets":31793,"gross":5356642.5,"atp":168.48,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":false,"status":"2026-05-13 00:00:00","ravens_rev":428531.4},{"city":"Atlanta, GA","date":"8/27/26","tickets":32634,"gross":4801823.5,"atp":147.14,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":false,"status":"2026-08-10 00:00:00","ravens_rev":384145.88},{"city":"Philadelphia, PA","date":"9/29/25","tickets":19757,"gross":2965648.0,"atp":150.11,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":false,"status":"2026-01-12 00:00:00","ravens_rev":237251.84}],"total_nights":5,"total_tickets":178855,"total_gross":27243462.21,"avg_gross":5448692.44,"avg_tickets":35771.0,"atp":152.32,"total_day1_tickets":0,"total_day1_gross":0,"total_presale_tickets":0,"total_presale_gross":0,"ravens_revenue":2179476.98,"completed_nights":2},{"artist":"LUKE COMBS","shows":[{"city":"Green Bay, WI","date":"5/15/26","tickets":40559,"gross":5932525.0,"atp":146.27,"day1_tickets":23066,"day1_gross":3576445.0,"presale_tickets":19335,"presale_gross":2961555.0,"is_final":true,"status":"6/9/26 - FINAL","ravens_rev":474602.0},{"city":"Green Bay, WI","date":"5/16/26","tickets":51981,"gross":8851380.76,"atp":170.28,"day1_tickets":43310,"day1_gross":7775850.0,"presale_tickets":42936,"presale_gross":7708270.0,"is_final":true,"status":"6/9/26 - FINAL","ravens_rev":708110.46}],"total_nights":2,"total_tickets":92540,"total_gross":14783905.76,"avg_gross":7391952.88,"avg_tickets":46270.0,"atp":159.76,"total_day1_tickets":66376,"total_day1_gross":11352295.0,"total_presale_tickets":62271,"total_presale_gross":10669825.0,"ravens_revenue":1182712.46,"completed_nights":2},{"artist":"JAY-Z","shows":[{"city":"Los Angles, CA","date":"10/23/26","tickets":43004,"gross":10265040.0,"atp":238.7,"day1_tickets":27948,"day1_gross":6627785.0,"presale_tickets":24004,"presale_gross":5484180.0,"is_final":false,"status":"2026-08-13 00:00:00","ravens_rev":821203.2},{"city":"Los Angles, CA","date":"10/24/26","tickets":14798,"gross":3923705.0,"atp":265.15,"day1_tickets":14381,"day1_gross":2927115.0,"presale_tickets":13387,"presale_gross":2670760.0,"is_final":false,"status":"2026-08-13 00:00:00","ravens_rev":313896.4}],"total_nights":2,"total_tickets":57802,"total_gross":14188745.0,"avg_gross":7094372.5,"avg_tickets":28901.0,"atp":245.47,"total_day1_tickets":42329,"total_day1_gross":9554900.0,"total_presale_tickets":37391,"total_presale_gross":8154940.0,"ravens_revenue":1135099.6,"completed_nights":0},{"artist":"FOO FIGHTERS","shows":[{"city":"Detroit, MI","date":"8/6/26","tickets":34199,"gross":4166242.5,"atp":121.82,"day1_tickets":23035,"day1_gross":2976926.5,"presale_tickets":18750,"presale_gross":2446635.0,"is_final":true,"status":"FINAL","ravens_rev":333299.4},{"city":"Cleveland, OH","date":"8/10/26","tickets":25336,"gross":35200.0,"atp":1.39,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":false,"status":"2026-02-10 00:00:00","ravens_rev":2816.0},{"city":"Philadelphia, PA","date":"8/13/26","tickets":37014,"gross":5036503.0,"atp":136.07,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":false,"status":"2026-01-13 00:00:00","ravens_rev":402920.24},{"city":"Nashville, TN","date":"8/15/26","tickets":35801,"gross":4674438.0,"atp":130.57,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":false,"status":"2026-08-12 00:00:00","ravens_rev":373955.04}],"total_nights":4,"total_tickets":132350,"total_gross":13912383.5,"avg_gross":3478095.88,"avg_tickets":33088.0,"atp":105.12,"total_day1_tickets":23035,"total_day1_gross":2976926.5,"total_presale_tickets":18750,"total_presale_gross":2446635.0,"ravens_revenue":1112990.68,"completed_nights":1},{"artist":"MONSTER JAM","shows":[{"city":"Tampa, FL","date":"2/28/26","tickets":41665,"gross":1765956.73,"atp":42.38,"day1_tickets":6019,"day1_gross":275837.5,"presale_tickets":5917,"presale_gross":265902.5,"is_final":true,"status":"2/28/26 - FINAL","ravens_rev":141276.54},{"city":"Tampa, FL","date":"3/1/26","tickets":33289,"gross":1228569.39,"atp":36.91,"day1_tickets":4108,"day1_gross":176235.5,"presale_tickets":3299,"presale_gross":140597.5,"is_final":true,"status":"3/1/26 - FINAL","ravens_rev":98285.55},{"city":"Detroit, MI","date":"3/21/26","tickets":53198,"gross":1777350.6,"atp":33.41,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":false,"status":"2026-03-10 00:00:00","ravens_rev":142188.05},{"city":"Detroit, MI","date":"3/22/26","tickets":49100,"gross":1717338.25,"atp":34.98,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":false,"status":"2026-03-10 00:00:00","ravens_rev":137387.06},{"city":"Los Angeles, CA","date":"4/11/26","tickets":27674,"gross":1595799.25,"atp":57.66,"day1_tickets":7883,"day1_gross":518356.2,"presale_tickets":7462,"presale_gross":488719.2,"is_final":true,"status":"5/12/26 - FINAL","ravens_rev":127663.94},{"city":"Philadelphia, PA","date":"4/18/26","tickets":18619,"gross":792919.9,"atp":42.59,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":false,"status":"2026-01-13 00:00:00","ravens_rev":63433.59},{"city":"Denver, CO","date":"5/9/26","tickets":41026,"gross":2074579.3,"atp":50.57,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":true,"status":"5/12/26 - FINAL","ravens_rev":165966.34},{"city":"Pittsburgh, PA","date":"6/20/26","tickets":20099,"gross":899894.0,"atp":44.77,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":false,"status":"2026-06-08 00:00:00","ravens_rev":71991.52},{"city":"Seattle, WA","date":"9/19/26","tickets":9247,"gross":446932.5,"atp":48.33,"day1_tickets":6308,"day1_gross":308736.5,"presale_tickets":5870,"presale_gross":286727.5,"is_final":false,"status":"2026-08-10 00:00:00","ravens_rev":35754.6}],"total_nights":9,"total_tickets":293917,"total_gross":12299339.92,"avg_gross":1366593.32,"avg_tickets":32657.0,"atp":41.85,"total_day1_tickets":24318,"total_day1_gross":1279165.7,"total_presale_tickets":22548,"total_presale_gross":1181946.7,"ravens_revenue":983947.19,"completed_nights":4},{"artist":"LOS BUKIS","shows":[{"city":"Los Angeles, CA","date":"2/20/26","tickets":45311,"gross":6204737.0,"atp":136.94,"day1_tickets":41158,"day1_gross":5653637.0,"presale_tickets":32874,"presale_gross":4622651.0,"is_final":true,"status":"4/7/26 - FINAL","ravens_rev":496378.96},{"city":"Los Angeles, CA","date":"2/21/26","tickets":47405,"gross":6043377.5,"atp":127.48,"day1_tickets":20087,"day1_gross":2698830.5,"presale_tickets":16396,"presale_gross":2189094.0,"is_final":true,"status":"4/7/26 - FINAL","ravens_rev":483470.2}],"total_nights":2,"total_tickets":92716,"total_gross":12248114.5,"avg_gross":6124057.25,"avg_tickets":46358.0,"atp":132.1,"total_day1_tickets":61245,"total_day1_gross":8352467.5,"total_presale_tickets":49270,"total_presale_gross":6811745.0,"ravens_revenue":979849.16,"completed_nights":2},{"artist":"MY CHEMICAL ROMANCE","shows":[{"city":"Nashville, TN","date":"8/13/26","tickets":46563,"gross":9734469.5,"atp":209.06,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":false,"status":"2026-08-12 00:00:00","ravens_rev":778757.56}],"total_nights":1,"total_tickets":46563,"total_gross":9734469.5,"avg_gross":9734469.5,"avg_tickets":46563.0,"atp":209.06,"total_day1_tickets":0,"total_day1_gross":0,"total_presale_tickets":0,"total_presale_gross":0,"ravens_revenue":778757.56,"completed_nights":0},{"artist":"POST MALONE","shows":[{"city":"Charlotte, NC","date":"6/9/26","tickets":22948,"gross":3210112.4,"atp":139.89,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":true,"status":"6/10/26 - FINAL","ravens_rev":256808.99},{"city":"Nashville, TN","date":"6/30/26","tickets":14158,"gross":2102539.0,"atp":148.51,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":true,"status":"FINAL","ravens_rev":168203.12},{"city":"Tampa, FL","date":"7/8/26","tickets":23210,"gross":3109638.53,"atp":133.98,"day1_tickets":15507,"day1_gross":2262011.0,"presale_tickets":14411,"presale_gross":2099856.0,"is_final":true,"status":"FINAL","ravens_rev":248771.08}],"total_nights":3,"total_tickets":60316,"total_gross":8422289.93,"avg_gross":2807429.98,"avg_tickets":20105.0,"atp":139.64,"total_day1_tickets":15507,"total_day1_gross":2262011.0,"total_presale_tickets":14411,"total_presale_gross":2099856.0,"ravens_revenue":673783.19,"completed_nights":3},{"artist":"SUPER CROSS","shows":[{"city":"Seattle, WA","date":"2/14/26","tickets":31076,"gross":1773350.45,"atp":57.06,"day1_tickets":8183,"day1_gross":515766.0,"presale_tickets":7785,"presale_gross":485009.0,"is_final":true,"status":"FINAL","ravens_rev":141868.04},{"city":"Detroit, MI","date":"3/28/26","tickets":33012,"gross":1642263.75,"atp":49.75,"day1_tickets":7901,"day1_gross":456147.0,"presale_tickets":7765,"presale_gross":447737.0,"is_final":true,"status":"FINAL","ravens_rev":131381.1},{"city":"Nashville, TN","date":"4/11/26","tickets":22527,"gross":1409063.5,"atp":62.55,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":false,"status":"2026-04-07 00:00:00","ravens_rev":112725.08},{"city":"Cleveland, OH","date":"4/18/26","tickets":20127,"gross":1310000.0,"atp":65.09,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":false,"status":"2026-02-10 00:00:00","ravens_rev":104800.0},{"city":"Philadelphia, PA","date":"4/25/26","tickets":8330,"gross":464736.25,"atp":55.79,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":false,"status":"2026-01-13 00:00:00","ravens_rev":37178.9},{"city":"Denver, CO","date":"5/2/26","tickets":27866,"gross":1601734.75,"atp":57.48,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":true,"status":"5/11/26-FINAL","ravens_rev":128138.78}],"total_nights":6,"total_tickets":142938,"total_gross":8201148.7,"avg_gross":1366858.12,"avg_tickets":23823.0,"atp":57.38,"total_day1_tickets":16084,"total_day1_gross":971913.0,"total_presale_tickets":15550,"total_presale_gross":932746.0,"ravens_revenue":656091.9,"completed_nights":3},{"artist":"GABRIEL IGLESIAS & JO KOY","shows":[{"city":"Los Angeles, CA","date":"3/21/26","tickets":47409,"gross":6554979.5,"atp":138.26,"day1_tickets":29004,"day1_gross":4052323.0,"presale_tickets":24894,"presale_gross":3523653.0,"is_final":true,"status":"4/7/26 - FINAL","ravens_rev":524398.36}],"total_nights":1,"total_tickets":47409,"total_gross":6554979.5,"avg_gross":6554979.5,"avg_tickets":47409.0,"atp":138.26,"total_day1_tickets":29004,"total_day1_gross":4052323.0,"total_presale_tickets":24894,"total_presale_gross":3523653.0,"ravens_revenue":524398.36,"completed_nights":1},{"artist":"ROAD TO 26: FRANCE vs. COLOMBIA","shows":[{"city":"Landover, MD","date":"3/29/26","tickets":55063,"gross":6222119.0,"atp":113.0,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":true,"status":"FINAL","ravens_rev":497769.52}],"total_nights":1,"total_tickets":55063,"total_gross":6222119.0,"avg_gross":6222119.0,"avg_tickets":55063.0,"atp":113.0,"total_day1_tickets":0,"total_day1_gross":0,"total_presale_tickets":0,"total_presale_gross":0,"ravens_revenue":497769.52,"completed_nights":1},{"artist":"DC UNITED / INTER MIAMI","shows":[{"city":"Baltimore, MD","date":"3/7/26","tickets":72026,"gross":5897009.25,"atp":81.87,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":true,"status":"4/10/26 - FINAL","ravens_rev":471760.74}],"total_nights":1,"total_tickets":72026,"total_gross":5897009.25,"avg_gross":5897009.25,"avg_tickets":72026.0,"atp":81.87,"total_day1_tickets":0,"total_day1_gross":0,"total_presale_tickets":0,"total_presale_gross":0,"ravens_revenue":471760.74,"completed_nights":1},{"artist":"BILLY JOEL/STING","shows":[{"city":"Charlotte, NC","date":"CANCELED","tickets":30199,"gross":5382300.32,"atp":178.23,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":false,"status":"2025-05-10 00:00:00","ravens_rev":430584.03}],"total_nights":1,"total_tickets":30199,"total_gross":5382300.32,"avg_gross":5382300.32,"avg_tickets":30199.0,"atp":178.23,"total_day1_tickets":0,"total_day1_gross":0,"total_presale_tickets":0,"total_presale_gross":0,"ravens_revenue":430584.03,"completed_nights":0},{"artist":"DUKE'S MAYO CLASSIC","shows":[{"city":"Charlotte, NC","date":"9/19/26","tickets":28297,"gross":4833103.53,"atp":170.8,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":false,"status":"2026-07-30 00:00:00","ravens_rev":386648.28}],"total_nights":1,"total_tickets":28297,"total_gross":4833103.53,"avg_gross":4833103.53,"avg_tickets":28297.0,"atp":170.8,"total_day1_tickets":0,"total_day1_gross":0,"total_presale_tickets":0,"total_presale_gross":0,"ravens_revenue":386648.28,"completed_nights":0},{"artist":"SHANE GILLIS","shows":[{"city":"Philadelphia, PA","date":"7/17/26","tickets":56199,"gross":3663345.0,"atp":65.19,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":false,"status":"2026-01-13 00:00:00","ravens_rev":293067.6}],"total_nights":1,"total_tickets":56199,"total_gross":3663345.0,"avg_gross":3663345.0,"avg_tickets":56199.0,"atp":65.19,"total_day1_tickets":0,"total_day1_gross":0,"total_presale_tickets":0,"total_presale_gross":0,"ravens_revenue":293067.6,"completed_nights":0},{"artist":"USMNT FRIENDLY","shows":[{"city":"Charlotte, NC","date":"5/31/26","tickets":49271,"gross":3153804.41,"atp":64.01,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":true,"status":"6/10/26 - FINAL","ravens_rev":252304.35}],"total_nights":1,"total_tickets":49271,"total_gross":3153804.41,"avg_gross":3153804.41,"avg_tickets":49271.0,"atp":64.01,"total_day1_tickets":0,"total_day1_gross":0,"total_presale_tickets":0,"total_presale_gross":0,"ravens_revenue":252304.35,"completed_nights":1},{"artist":"ENGLAND vs. NEW ZEALAND\nFLORIDA SERIES","shows":[{"city":"Tampa, FL","date":"6/6/06","tickets":24784,"gross":2715473.27,"atp":109.57,"day1_tickets":12889,"day1_gross":1808856.5,"presale_tickets":12482,"presale_gross":1761281.5,"is_final":true,"status":"6/6/26 - FINAL","ravens_rev":217237.86}],"total_nights":1,"total_tickets":24784,"total_gross":2715473.27,"avg_gross":2715473.27,"avg_tickets":24784.0,"atp":109.57,"total_day1_tickets":12889,"total_day1_gross":1808856.5,"total_presale_tickets":12482,"total_presale_gross":1761281.5,"ravens_revenue":217237.86,"completed_nights":1},{"artist":"MLS ALL STAR","shows":[{"city":"Charlotte, NC","date":"7/29/26","tickets":26743,"gross":2102222.84,"atp":78.61,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":true,"status":"FINAL","ravens_rev":168177.83}],"total_nights":1,"total_tickets":26743,"total_gross":2102222.84,"avg_gross":2102222.84,"avg_tickets":26743.0,"atp":78.61,"total_day1_tickets":0,"total_day1_gross":0,"total_presale_tickets":0,"total_presale_gross":0,"ravens_revenue":168177.83,"completed_nights":1},{"artist":"DUKE'S MAYO BOWL","shows":[{"city":"Charlotte, NC","date":"1/3/26","tickets":17866,"gross":1814681.08,"atp":101.57,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":true,"status":"2/9/26 - FINAL","ravens_rev":145174.49}],"total_nights":1,"total_tickets":17866,"total_gross":1814681.08,"avg_gross":1814681.08,"avg_tickets":17866.0,"atp":101.57,"total_day1_tickets":0,"total_day1_gross":0,"total_presale_tickets":0,"total_presale_gross":0,"ravens_revenue":145174.49,"completed_nights":1},{"artist":"WREXHAM AFC vs. LEEDS UNITED","shows":[{"city":"Tampa, FL","date":"7/25/26","tickets":12186,"gross":1071006.7,"atp":87.89,"day1_tickets":4474,"day1_gross":398123.0,"presale_tickets":4058,"presale_gross":357417.5,"is_final":true,"status":"FINAL","ravens_rev":85680.54}],"total_nights":1,"total_tickets":12186,"total_gross":1071006.7,"avg_gross":1071006.7,"avg_tickets":12186.0,"atp":87.89,"total_day1_tickets":4474,"total_day1_gross":398123.0,"total_presale_tickets":4058,"total_presale_gross":357417.5,"ravens_revenue":85680.54,"completed_nights":1},{"artist":"SJQ vs LAFC","shows":[{"city":"Santa Clara, CA","date":"9/19/26","tickets":10532,"gross":561441.0,"atp":53.31,"day1_tickets":null,"day1_gross":null,"presale_tickets":null,"presale_gross":null,"is_final":false,"status":"2026-05-13 00:00:00","ravens_rev":44915.28}],"total_nights":1,"total_tickets":10532,"total_gross":561441.0,"avg_gross":561441.0,"avg_tickets":10532.0,"atp":53.31,"total_day1_tickets":0,"total_day1_gross":0,"total_presale_tickets":0,"total_presale_gross":0,"ravens_revenue":44915.28,"completed_nights":0}];
+
+const MT_BANK_ARTISTS = [
+  'DC UNITED / INTER MIAMI', 'MORGAN WALLEN', 'BTS WORLD TOUR'
+];
+const MT_UPCOMING = [
+  'SPRINGBOKS VS ALL BLACKS', 'MEXICO VS COLOMBIA', 'USHER/CHRIS BROWN'
+];
+
+function fmt$(n) {
+  if (n == null || isNaN(n)) return '—';
+  if (n >= 1e6) return '$' + (n/1e6).toFixed(2) + 'M';
+  return '$' + Math.round(n).toLocaleString();
+}
+function fmtFull$(n) {
+  if (n == null || isNaN(n)) return '—';
+  return '$' + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+function fmtN(n) {
+  if (n == null || isNaN(n) || n === 0) return '—';
+  return Math.round(n).toLocaleString();
+}
+function fmtATP(n) {
+  if (n == null || isNaN(n)) return '—';
+  return '$' + n.toFixed(2);
+}
+
+// Build artist chips
+const artistList = document.getElementById('artistList');
+GSN_DATA.forEach(a => {
+  const chip = document.createElement('span');
+  chip.className = 'artist-chip' + (MT_BANK_ARTISTS.includes(a.artist) ? ' mt-bank' : '');
+  chip.textContent = a.artist;
+  chip.onclick = () => {
+    document.getElementById('searchInput').value = a.artist;
+    runSearch(a.artist);
+    document.getElementById('artistList').style.display = 'none';
+  };
+  artistList.appendChild(chip);
+});
+
+document.getElementById('searchInput').addEventListener('input', function() {
+  const q = this.value.trim();
+  if (q.length === 0) {
+    clearSearch();
+    return;
+  }
+  artistList.style.display = 'none';
+  runSearch(q);
+});
+
+function clearSearch() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('results').innerHTML = '';
+  document.getElementById('artistList').style.display = 'flex';
+}
+
+function runSearch(query) {
+  const q = query.toUpperCase();
+  const matches = GSN_DATA.filter(a => a.artist.toUpperCase().includes(q));
+  const res = document.getElementById('results');
+
+  if (matches.length === 0) {
+    res.innerHTML = `<div class="no-result">
+      <div class="emoji">🔍</div>
+      <h3>No results for "${query}"</h3>
+      <p>Try a partial name — e.g. "Usher", "Bruno", "BTS"</p>
+    </div>`;
+    return;
+  }
+
+  const artist = matches[0]; // show top match
+  const isMT = MT_BANK_ARTISTS.includes(artist.artist);
+  const isUpcoming = MT_UPCOMING.some(u => artist.artist.toUpperCase().includes(u.split(' ')[0]));
+  const mtBadge = isMT ? '<span class="mt-badge">✅ M&T Bank</span>' : 
+                  isUpcoming ? '<span class="mt-badge" style="background:#2E7D32">📅 Upcoming M&T</span>' : '';
+
+  // Per-night averages for context
+  const avgTix = Math.round(artist.total_tickets / artist.total_nights);
+  const avgGross = artist.avg_gross;
+
+  const showRows = artist.shows.filter(s => s.tickets != null).map(s => {
+    const tag = s.is_final
+      ? '<span class="final-tag">✓ Final</span>'
+      : '<span class="pending-tag">Pending</span>';
+    const d1 = s.day1_tickets ? fmtN(s.day1_tickets) : '—';
+    const d1g = s.day1_gross ? fmt$(s.day1_gross) : '—';
+    return `<tr>
+      <td>${s.city}</td>
+      <td>${s.date}</td>
+      <td>${fmtN(s.tickets)}</td>
+      <td>${fmtATP(s.atp)}</td>
+      <td>${d1}</td>
+      <td>${d1g}</td>
+      <td>${fmt$(s.gross)}</td>
+      <td>${fmt$(s.ravens_rev)}</td>
+      <td>${tag}</td>
+    </tr>`;
+  }).join('');
+
+  // Ravens revenue calc
+  const ravShare = artist.ravens_revenue;
+  const ravPerNight = ravShare / artist.total_nights;
+
+  res.innerHTML = `
+    <div class="artist-title">${artist.artist}${mtBadge}</div>
+    <div class="artist-subtitle">${artist.total_nights} show nights · ${artist.completed_nights} completed (Final) · GSN Rank #${GSN_DATA.findIndex(a=>a.artist===artist.artist)+1} by Gross</div>
+
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">Total Tickets Sold</div>
+        <div class="kpi-value">${fmtN(artist.total_tickets)}</div>
+        <div class="kpi-sub">Avg ${fmtN(avgTix)} / night</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Avg Ticket Price (ATP)</div>
+        <div class="kpi-value">${fmtATP(artist.atp)}</div>
+        <div class="kpi-sub">Total gross ÷ tickets sold</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Day 1 On-Sale Tickets</div>
+        <div class="kpi-value">${fmtN(artist.total_day1_tickets) !== '—' ? fmtN(artist.total_day1_tickets) : '—'}</div>
+        <div class="kpi-sub">Day 1 Gross: ${fmt$(artist.total_day1_gross || 0)}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Presale Tickets</div>
+        <div class="kpi-value">${fmtN(artist.total_presale_tickets) !== '—' ? fmtN(artist.total_presale_tickets) : '—'}</div>
+        <div class="kpi-sub">Gross: ${fmt$(artist.total_presale_gross || 0)}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Total Gross Revenue</div>
+        <div class="kpi-value">${fmt$(artist.total_gross)}</div>
+        <div class="kpi-sub">Avg ${fmt$(avgGross)} / night</div>
+      </div>
+      <div class="kpi-card highlight">
+        <div class="kpi-label">Ravens Revenue (8%)</div>
+        <div class="kpi-value">${fmt$(ravShare)}</div>
+        <div class="kpi-sub">≈ ${fmt$(ravPerNight)} per night · 30% × 24.8%</div>
+      </div>
+    </div>
+
+    <div class="calc-note">
+      📱 <strong>Quick Calc:</strong> ${fmtN(avgTix)} avg tickets × ${fmtATP(artist.atp)} ATP = ${fmt$(avgGross)} avg gross/night × 8% = <strong>${fmt$(ravPerNight)} Ravens revenue per night</strong>
+    </div>
+
+    ${showRows ? `
+    <div class="table-section">
+      <div class="table-title">Show-by-Show Breakdown</div>
+      <div style="overflow-x:auto">
+      <table class="show-table">
+        <thead><tr>
+          <th>City</th><th>Date</th><th>Tickets Sold</th><th>ATP</th>
+          <th>Day 1 Tickets</th><th>Day 1 Gross</th><th>Total Gross</th><th>Ravens Rev (8%)</th><th>Status</th>
+        </tr></thead>
+        <tbody>${showRows}</tbody>
+      </table>
+      </div>
+    </div>` : ''}
+
+    ${matches.length > 1 ? `<p style="margin-top:16px;font-size:0.82rem;color:var(--muted);">Also matched: ${matches.slice(1).map(a=>`<strong>${a.artist}</strong>`).join(', ')} — type more to narrow results.</p>` : ''}
+
+    <button class="pdf-btn" onclick="window.print()">⬇️ Print / Save as PDF</button>
+  `;
+}
+
+// Auto-focus search on load
+document.getElementById('searchInput').focus();
+</script>
+
+</body>
+</html>
