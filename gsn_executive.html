@@ -4,6 +4,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GSN Executive Dashboard | Baltimore Ravens</title>
+
+<!-- PWA / Add to Home Screen -->
+<link rel="manifest" href="manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="GSN Exec">
+<meta name="theme-color" content="#24135F">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
 <script>/**
  * Skipped minification because the original files appears to be already minified.
  * Original file: /npm/chart.js@4.4.0/dist/chart.umd.js
@@ -264,7 +275,7 @@
 <!-- ═══════════════════════════════════════════════════════════ -->
 <div class="section">
   <div class="section-title">📍 How Baltimore Compares — Avg Revenue Per Event Night</div>
-  <div class="section-sub">M&T Bank Stadium (Baltimore/Landover) vs. peer GSN venues across all 2026 events</div>
+  <div class="section-sub">M&T Bank Stadium (Baltimore) vs. peer GSN venues across all 2026 events</div>
   <div class="chart-wrap">
     <div class="chart-title">Average Gross Revenue Per Night by City</div>
     <canvas id="venueChart"></canvas>
