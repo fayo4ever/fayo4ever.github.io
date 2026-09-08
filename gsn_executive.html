@@ -299,7 +299,7 @@
       <th onclick="sortTable(3)" data-col="3">Total Gross<span class="sort-arrow" id="arrow3">↕</span></th>
       <th onclick="sortTable(4)" data-col="4">Avg Gross/Night<span class="sort-arrow" id="arrow4">↕</span></th>
       <th onclick="sortTable(5)" data-col="5">Avg ATP<span class="sort-arrow" id="arrow5">↕</span></th>
-      <th onclick="sortTable(6)" data-col="6">Ravens Rev (8%)<span class="sort-arrow" id="arrow6">↕</span></th>
+      <th onclick="sortTable(6)" data-col="6">Ravens Rev/Night (8%)<span class="sort-arrow" id="arrow6">↕</span></th>
     </tr></thead>
     <tbody id="rankingsBody"></tbody>
   </table>
@@ -528,7 +528,11 @@ try {
 } catch(e) { console.error('venueChart error:', e); }
 
 // ── PURSUIT TARGETS ───────────────────────────────────────────
-const NOT_MT = GSN_DATA.filter(a => !MT_ARTIST_NAMES.includes(a.artist) && a.completed_nights === a.total_nights).slice(0,9);
+const MT_BOOKED = MT_UPCOMING.filter(e => e.category === 'Concert').map(e => e.artist.toUpperCase().replace(/[\s\/]/g,''));
+const NOT_MT = GSN_DATA.filter(a => {
+  const norm = a.artist.toUpperCase().replace(/[\s\/]/g,'');
+  return !MT_ARTIST_NAMES.includes(a.artist) && !MT_BOOKED.includes(norm);
+}).slice(0,9);
 const purEl = document.getElementById('pursueGrid');
 NOT_MT.forEach((a, i) => {
   purEl.innerHTML += `<div class="pursue-card">
@@ -551,7 +555,7 @@ const tableData = GSN_DATA.map((a, i) => ({
   total_gross:  a.total_gross,
   avg_gross:    a.avg_gross,
   atp:          a.atp,
-  ravens_rev:   a.ravens_revenue,
+  ravens_rev:   a.avg_gross * 0.08,
   is_mt:        MT_ARTIST_NAMES.includes(a.artist),
 }));
 
